@@ -1,93 +1,84 @@
-// let boxes=document.querySelectorAll(".box");
-// let resetBtn = document.querySelector("#reset-btn");
-// let newGameBtn = document.querySelector("#new-btn");
-// let msgContainer = document.querySelector(".msg-container");
-// let msg = document.querySelector("#msg");
+const BASE_URL="https://cdn.jsdelivr.net/gh/fawazahmed0/currency-api@1/latest/currencies";
+
+ const dropdowns=document.querySelectorAll(".dropdown select");
+ const btn=document.querySelector("form button");
+ const fromCurr =document.querySelector(".from select");
+ const toCurr=document.querySelector(".to select");
+ const msg = document.querySelector(".msg");
 
 
-// let turnO =true; //playerO,playerX
+ 
 
-//  const winPatterns= [
-//     [0,1,2],
-//     [0,3,6],
-//     [0,4,8],
-//     [1,4,7],
-//     [2,5,8],
-//     [2,4,6],
-//     [3,4,5],
-//     [6,7,8]
-//  ];
-
-//  const resetGame =() =>
+//  for (code in countryList)
 //  {
-//     turnO=true;
-//     enableBoxes();
-//     msgContainer.classList.add("hide");
+//     console.log(code ,countryList[code]);
 //  }
 
-//  boxes.forEach((box) =>{
-//     box.addEventListener("click",() =>
-//     {
-//         if(turnO) //playerO
-//         {
-//             box.innerText="O";
-//             //  box.style.color="green";
-//             turnO = false;
-//         }
-//         else{ //playerX
-//             box.innerText="X";
-//             //  box.style.color="b0413e";
-//             turnO = true;
-//         }
-//         // box.style.color="green";
-//         // box.style.color="b0413e";
-//         box.disabled =true;
-//         checkWinner();
-//     });
-//  });
+ for(let select of dropdowns)
+ {
+    for (currCode in countryList){
+        let newOption = document.createElement("option");
+        newOption.innerText = currCode;
+        newOption.value = currCode;
+         if(select.name === "from" && currCode === "USD"){
+            newOption.selected="selected";
+        }
+        else if(select.name === "to" && currCode === "INR"){
+            newOption.selected="selected";
+        }
+        select.append(newOption);
+    }
 
-//     const disableBoxes =() =>{
-//     for (let box of boxes)
-//     {
-//         box.disabled=true;
-//     }
-//     };
+    select.addEventListener("change" ,(evt) =>{
+       updateFlag(evt.target); 
+    })
+ }
 
-//     const enableBoxes =() => {
-//         for (let box of boxes)
-//         {
-//             box.disabled=false;
-//             box.innerText="";
-//         }
-//         };
+ updateExchangeRate = async () =>{
 
-//  const showWinner = (winner) =>
-//  {
-//     msg.innerText=`Congratulation , winner is ${winner}`;
-//     msgContainer.classList.remove("hide");
-//     disableBoxes();
-//  }
+    let amount = document.querySelector(".amount input");
+    let amtVal =amount.value;
 
-//  const checkWinner = () =>
-//  {
-//     for(let pattern of winPatterns)
-//     {
-//         let pos1Val =  boxes[pattern[0]].innerText;
-//         let pos2Val =  boxes[pattern[1]].innerText;
-//         let pos3Val =  boxes[pattern[2]].innerText;
+    if(amtVal === "" || amtVal < 1)
+    {
+        amtVal=1;
+        amount.value="1"
 
-//         if(pos1Val !="" && pos2Val !="" && pos3Val !="")
-//         {
-//           if(pos1Val === pos2Val && pos2Val === pos3Val)
-//           {
-//             showWinner(pos1Val);
-            
-//           }
-//         }
-//     }
-//  };
+    }
+   // console.log(fromCurr.value ,toCurr.value);
+   const URL =`${BASE_URL}/${fromCurr.value.toLowerCase()}/${toCurr.value.toLowerCase()}.json`; 
 
-//  newGameBtn.addEventListener("click", resetGame);
-//  resetBtn.addEventListener("click" ,resetGame);
+   let response = await fetch(URL);
+   let data=await response.json();
+   let rate=data[toCurr.value.toLowerCase()]
+
+   let finalAmount =amtVal * rate;
+   msg.innerText=`${amtVal} ${fromCurr.value} = ${finalAmount} ${toCurr.value}`;
+   console.log(rate);
+    //console.log(amtVal);
+
+ }
+
+ const updateFlag =(element) =>{
+ let currCode = element.value;
+ let countryCode =countryList[currCode];
+ let newSrc=`https://flagsapi.com/${countryCode}/flat/64.png`; 
+ let img = element.parentElement.querySelector("img");
+ img.src =newSrc;
+//  console.log(currCode);
+ }
 
 
+
+ btn.addEventListener("click" , (evt)=>
+ {
+    evt.preventDefault();
+   updateExchangeRate(); 
+ });
+
+ window.addEventListener("load" , ()=>
+ {
+  updateExchangeRate();
+ });
+
+ 
